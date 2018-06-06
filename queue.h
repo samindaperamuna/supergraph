@@ -5,21 +5,24 @@
 extern "C" {
 #endif
 
-    extern int* queue;
-    extern int len = 0;
-    extern int head = 0;
+    typedef struct Node_t {
+        void* data;
+        struct Node_t* prev;
+    } Node;
 
-    int max = 0;
+    /* The head of the queue, holds the data nodes within the queue. */
+    typedef struct Queue {
+        Node* head;
+        Node* tail;
+        int size;
+        int limit;
+    } Queue;
     
-    void _init(int size);
-
-    int isFull();
-
-    void enqueue(int i);
-
-    int dequeue();
-
-    void _destroy();
+    Queue* constructQueue(int limit);
+    void DestructQueue(Queue *queue);
+    int Enqueue(Queue* pQueue, Node* item);
+    Node* Dequeue(Queue* pQueue);
+    int isEmpty(Queue* pQueue);
 
 #ifdef __cplusplus
 }
