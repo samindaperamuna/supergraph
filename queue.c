@@ -21,10 +21,10 @@ Queue *constructQueue(int limit) {
     return queue;
 }
 
-void DestructQueue(Queue *queue) {
+void destructQueue(Queue *queue) {
     Node *pN;
     while (!isEmpty(queue)) {
-        pN = Dequeue(queue);
+        pN = dequeue(queue);
         free(pN);
     }
     free(queue);
@@ -56,7 +56,7 @@ int enqueue(Queue *pQueue, Node *item) {
     return TRUE;
 }
 
-int dequeue(Queue *pQueue) {
+Node* dequeue(Queue *pQueue) {
     /* The queue is empty or bad parameter. */
     Node *item;
     if (isEmpty(pQueue))

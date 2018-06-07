@@ -1,7 +1,10 @@
 #ifndef SUPERGRAPH_H
 #define SUPERGRAPH_H
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdint.h>
+
+#include "queue.h"
 
 typedef struct query_helper query_helper;
 typedef struct result result;
@@ -19,7 +22,7 @@ struct query_helper {
 };
 
 struct result {
-    void** elements;
+    void* elements;
     size_t n_elements;
 };
 
@@ -55,6 +58,10 @@ struct load_helper {
 query_helper* engine_setup(size_t n_processes);
 
 void* threadLoader(void* helper);
+
+post *bfsSearch(int start, bool* visited, Queue* queue, post* posts, uint64_t post_id);
+
+void bfsCollect(bool* visited, Queue* queue, post* posts, post* reposts, int *count);
 
 result* find_all_reposts(post* posts, size_t count, uint64_t post_id, query_helper* helper);
 

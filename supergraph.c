@@ -47,13 +47,119 @@ void* threadLoader(void* helper) {
     query_helper* queryHelper = _helper->query_helper;
 
     if (_helper->isUser) {
-        queryHelper->users = (user*) post_loader(&queryHelper->n_users, _helper->file_name);
+        queryHelper->users = (user*) post_loader(&queryHelper->n_users, file_name);
     } else {
-        queryHelper->posts = (post*) post_loader(&queryHelper->n_posts, _helper->file_name);
+        queryHelper->posts = (post*) post_loader(&queryHelper->n_posts, file_name);
     }
 }
 
 result* find_all_reposts(post* posts, size_t count, uint64_t post_id, query_helper* helper) {
+    // TODO: Clean up memory.
+    post *reposts;
+    Queue *queue = constructQueue(count);
+    post* post = NULL;
+    int repostCount = 0;
+
+    // Allocate and initialise the array holding the visited status of the post.
+    bool *visited = (bool*) malloc(sizeof (bool) * count);
+    for (int i = 0; i < count; i++) {
+        visited[i] = false;
+    }
+
+    // FInd the initial post.
+    // Check for unvisited nodes and apply BFS.
+    for (int i = 0; i < count; i++) {
+        if (!visited[i] && post == NULL) {
+            post = bfsSearch(i, visited, queue, posts, post_id);
+        }
+    }
+
+    reposts = post;
+    repostCount++;
+
+    if (post != NULL) {
+        // Clear the queue.
+        destructQueue(queue);
+        queue = constructQueue(count);
+
+        // Clear booleans.
+        visited = (bool*) realloc(visited, sizeof (bool) * count);
+        for (int i = 0; i < count; i++) {
+            visited[i] = false;
+        }
+
+        for (int i = 0; i < post->n_reposted; i++) {
+            Node *node = (Node*) malloc(sizeof (Node));
+            node->prev = NULL;
+            node->data = post->reposted_idxs[i];
+            enqueue(queue, node);
+        }
+
+        // Count and collect all the reposts.
+        bfsCollect(visited, queue, posts, reposts, &repostCount);
+
+        // Append to result structure.
+        result* res = (result*) malloc(sizeof (result));
+        res->elements = (void*) reposts;
+        res->n_elements = repostCount;
+
+        return res;
+    }
+
+    return NULL;
+}
+
+void bfsCollect(bool* visited, Queue* queue, post* posts, post* reposts, int* count) {
+    Node *node = (Node*) malloc(sizeof (Node));
+    node->prev = NULL;
+    node->data = 0;
+
+    enqueue(queue, node);
+
+    while (!isEmpty(queue)) {
+        node = dequeue(queue);
+        int index = node->data;
+
+        if (visited[index] == false) {
+            visited[index] = true;
+            (*count)++;
+            *(++reposts) = posts[index];
+            for (int i = 0; i < posts[index].n_reposted; i++) {
+                Node *temp = (Node*) malloc(sizeof (Node));
+                temp->prev = NULL;
+                temp->data = posts[index].reposted_idxs[i];
+                enqueue(queue, temp);
+            }
+        }
+    }
+}
+
+post *bfsSearch(int start, bool* visited, Queue* queue, post* posts, uint64_t post_id) {
+    Node *node = (Node*) malloc(sizeof (Node));
+    node->prev = NULL;
+    node->data = start;
+
+    enqueue(queue, node);
+
+    while (!isEmpty(queue)) {
+        node = dequeue(queue);
+        int index = node->data;
+
+        if (visited[index] == false) {
+            visited[index] = true;
+            if (posts[index].pst_id == post_id) {
+                post *temp = &posts[index];
+                return temp;
+            }
+            for (int i = 0; i < posts[index].n_reposted; i++) {
+                Node *temp = (Node*) malloc(sizeof (Node));
+                temp->prev = NULL;
+                temp->data = posts[index].reposted_idxs[i];
+                enqueue(queue, temp);
+            }
+        }
+    }
+
     return NULL;
 }
 

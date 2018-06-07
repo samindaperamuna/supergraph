@@ -6,8 +6,8 @@ extern "C" {
 #endif
 
     typedef struct Node_t {
-        void* data;
-        struct Node_t* prev;
+        int data;
+        struct Node_t *prev;
     } Node;
 
     /* The head of the queue, holds the data nodes within the queue. */
@@ -18,10 +18,10 @@ extern "C" {
         int limit;
     } Queue;
     
-    Queue* constructQueue(int limit);
-    void DestructQueue(Queue *queue);
-    int Enqueue(Queue* pQueue, Node* item);
-    Node* Dequeue(Queue* pQueue);
+    Queue *constructQueue(int limit);
+    void destructQueue(Queue *queue);
+    int enqueue(Queue* pQueue, Node* item);
+    Node *dequeue(Queue* pQueue);
     int isEmpty(Queue* pQueue);
 
 #ifdef __cplusplus
